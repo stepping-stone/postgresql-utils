@@ -33,13 +33,10 @@
  
 umask 077
  
-if ! test -z $1; then
-    keep_days=$1
-else
-    # default: keep dump files 14 days long before deleting them
-    keep_days=14
-fi
- 
+# default: keep dump files 14 days long before deleting them
+keep_days=${1:-14}
+[ -n "$2" ] && filter="AND ($2)"
+
 psql='/usr/bin/psql'
 pg_dump='/usr/bin/pg_dump --create --blobs --oids'
 pg_dumpall='/usr/bin/pg_dumpall'
@@ -54,7 +51,7 @@ global_dump_dir="$backup_dir/global"
  
 postgres_user="postgres-backup"
  
-$psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ORDER BY datname;" postgres | \
+$psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ${filter} ORDER BY datname;" postgres | \
 while read line; do
     database=${line}
     echo "dumping database: $database";
