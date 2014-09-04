@@ -3,13 +3,14 @@
 # postgresql-backup.sh - Dump all postgres databases including the global objects
 ################################################################################
 #
-# Copyright (C) 2013 stepping stone GmbH
+# Copyright (C) 2014 stepping stone GmbH
 #                    Bern, Switzerland
 #                    http://www.stepping-stone.ch
 #                    support@stepping-stone.ch
 #
 # Authors:
 #   Christian Affolter <christian.affolter@stepping-stone.ch>
+#   Tiziano Müller <tiziano.mueller@stepping-stone.ch>
 #
 # Licensed under the EUPL, Version 1.1.
 #
