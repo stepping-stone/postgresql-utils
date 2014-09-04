@@ -55,7 +55,7 @@ echo "dumping global objects"
 $pg_dumpall -U $postgres_user --globals-only | \
     $compressor > $global_dump_dir/global.$current_date.$compressor_suffix
  
- $psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ${filter} ORDER BY datname;" postgres | \
+$psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ${filter} ORDER BY datname;" postgres | \
 while read line; do
     database=${line}
     echo "dumping database: $database";
