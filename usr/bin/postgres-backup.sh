@@ -54,7 +54,7 @@ global_dump_dir="$backup_dir/global"
  
 postgres_user="postgres-backup"
  
-$psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0');" postgres | \
+$psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ORDER BY datname;" postgres | \
 while read line; do
     database=${line}
     echo "dumping database: $database";
