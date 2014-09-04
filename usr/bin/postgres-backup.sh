@@ -30,9 +30,9 @@
 # Include this script in a daily cronjob.
 #
 ################################################################################
- 
+
 umask 077
- 
+
 # default: keep dump files 14 days long before deleting them
 keep_days=${1:-14}
 [ -n "$2" ] && filter="AND ($2)"
@@ -44,27 +44,25 @@ compressor='/bin/bzip2 --stdout --small --best'
 compressor_suffix='bz2'
 current_date=`/bin/date +%Y%m%d`
 find_cmd='/usr/bin/find'
- 
+
 backup_dir='/var/backup/postgres/dump'
 db_dump_dir="$backup_dir/database"
 global_dump_dir="$backup_dir/global"
- 
+
 postgres_user="postgres-backup"
+
+echo "dumping global objects"
+$pg_dumpall -U $postgres_user --globals-only | \
+    $compressor > $global_dump_dir/global.$current_date.$compressor_suffix
  
-$psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ${filter} ORDER BY datname;" postgres | \
+ $psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ${filter} ORDER BY datname;" postgres | \
 while read line; do
     database=${line}
     echo "dumping database: $database";
     $pg_dump -U $postgres_user "$database" | \
         $compressor > $db_dump_dir/$database.$current_date.$compressor_suffix
 done
- 
-echo "dumping global objects"
-$pg_dumpall -U $postgres_user --globals-only | \
-    $compressor > $global_dump_dir/global.$current_date.$compressor_suffix
- 
- 
+
 # delete old dumps which are older than $keep_days
 $find_cmd $db_dump_dir     -type f -name \*.${compressor_suffix} -mtime +$keep_days -delete
 $find_cmd $global_dump_dir -type f -name \*.${compressor_suffix} -mtime +$keep_days -delete
-
