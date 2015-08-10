@@ -57,25 +57,25 @@ fi
 if test ! -r "$source_wal_path"; then
     echo "Source WAL file doesn't exists" \
          "or isn't readable: $source_wal_path" >&2
-    exit 1
+    exit 2
 fi
  
 if test -f $destination_wal_path; then
     echo "Destination WAL file already present: $destination_wal_path" \
          "won't overwrite!" >&2
  
-    exit 1
+    exit 3
 fi
  
 if ! cp -a "$source_wal_path" "$destination_wal_path"; then
     echo "Unable to copy the WAL file to the archive" >&2
-    exit 1
+    exit 4
 fi
  
 if ! $compressor "$destination_wal_path"; then
     echo "Unable to compress WAL file" >&2
     rm "$destination_wal_path"
-    exit 1
+    exit 5
 fi
  
 echo "successfully archived WAL file $destination_wal_path"
