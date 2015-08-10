@@ -3,10 +3,10 @@
 # postgres-wal-archive.sh - Archive PostgreSQL server WAL files
 ################################################################################
 #
-# Copyright (C) 2013 stepping stone GmbH
-#                    Bern, Switzerland
-#                    http://www.stepping-stone.ch
-#                    support@stepping-stone.ch
+# Copyright (C) 2013 - 2015 stepping stone GmbH
+#                           Bern, Switzerland
+#                           http://www.stepping-stone.ch
+#                           support@stepping-stone.ch
 #
 # Authors:
 #   Christian Affolter <christian.affolter@stepping-stone.ch>
