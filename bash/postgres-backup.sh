@@ -32,7 +32,7 @@
 #
 ################################################################################
 
-umask 077
+umask 0027
 
 # default: keep dump files 14 days long before deleting them
 keep_days=${1:-14}
