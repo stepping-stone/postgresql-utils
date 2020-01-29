@@ -41,8 +41,8 @@ keep_days=${1:-14}
 psql='/usr/bin/psql'
 pg_dump='/usr/bin/pg_dump --create --blobs --oids'
 pg_dumpall='/usr/bin/pg_dumpall'
-compressor='/bin/bzip2 --stdout --small --best'
-compressor_suffix='bz2'
+compressor='/bin/gzip --stdout'
+compressor_suffix='gz'
 current_date=`/bin/date +%Y%m%d`
 find_cmd='/usr/bin/find'
 

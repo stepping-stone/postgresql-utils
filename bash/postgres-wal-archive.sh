@@ -41,7 +41,7 @@ source_wal_path="$1"
 source_wal_name="$2"
 archive_dir="/var/backup/postgres/wal"
 destination_wal_path="$archive_dir/$today-$source_wal_name"
-compressor="/bin/bzip2 --small --best"
+compressor="/bin/gzip"
 
 if test ! -d "$archive_dir" || test ! -w "$archive_dir"; then
     echo "Archive directory doesn't exists or isn't writable: $archive_dir" >&2
