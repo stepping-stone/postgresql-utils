@@ -47,7 +47,7 @@ pg_dump='/usr/bin/pg_dump --create --blobs'
 pg_dumpall='/usr/bin/pg_dumpall'
 compressor='/bin/gzip --stdout'
 compressor_suffix='gz'
-current_date=`/bin/date +%Y%m%d`
+current_date="$(/bin/date +%Y%m%d)"
 find_cmd='/usr/bin/find'
 
 pg_version="$(psql -V | sed 's/.* //')"
@@ -57,7 +57,7 @@ then
 	pg_dump="$pg_dump --oids"
 fi
 
-backup_dir='/var/backup/postgres/dump'
+backup_dir=/var/backup/postgres/dump
 db_dump_dir="$backup_dir/database"
 global_dump_dir="$backup_dir/global"
 postgres_user="postgres-backup"
@@ -71,9 +71,9 @@ while read line; do
 	database=${line}
 	echo "dumping database: $database";
 	$pg_dump -U $postgres_user "$database" | \
-	$compressor > $db_dump_dir/$database.$current_date.$compressor_suffix
+		$compressor > $db_dump_dir/$database.$current_date.$compressor_suffix
 done
 
 # delete old dumps which are older than $keep_days
-$find_cmd $db_dump_dir     -type f -name \*.${compressor_suffix} -mtime +$keep_days -delete
-$find_cmd $global_dump_dir -type f -name \*.${compressor_suffix} -mtime +$keep_days -delete
+$find_cmd "$db_dump_dir"     -type f -mtime +$keep_days -delete
+$find_cmd "$global_dump_dir" -type f -mtime +$keep_days -delete
