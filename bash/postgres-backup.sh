@@ -32,36 +32,46 @@
 #
 ################################################################################
 
+set -o errexit
 umask 0027
 
 # default: keep dump files 14 days long before deleting them
 keep_days=${1:-14}
-[ -n "$2" ] && filter="AND ($2)"
+
+if test -n "$2"; then
+	filter="AND ($2)"
+fi
 
 psql='/usr/bin/psql'
-pg_dump='/usr/bin/pg_dump --create --blobs --oids'
+pg_dump='/usr/bin/pg_dump --create --blobs'
 pg_dumpall='/usr/bin/pg_dumpall'
 compressor='/bin/gzip --stdout'
 compressor_suffix='gz'
 current_date=`/bin/date +%Y%m%d`
 find_cmd='/usr/bin/find'
 
+pg_version="$(psql -V | sed 's/.* //')"
+
+if test "$pg_version" -le 11
+then
+	pg_dump="$pg_dump --oids"
+fi
+
 backup_dir='/var/backup/postgres/dump'
 db_dump_dir="$backup_dir/database"
 global_dump_dir="$backup_dir/global"
-
 postgres_user="postgres-backup"
 
 echo "dumping global objects"
 $pg_dumpall -U $postgres_user --globals-only | \
-    $compressor > $global_dump_dir/global.$current_date.$compressor_suffix
+	$compressor > $global_dump_dir/global.$current_date.$compressor_suffix
 
 $psql -U $postgres_user -A -q -t -c "SELECT datname FROM pg_database WHERE (datname != 'template0') ${filter} ORDER BY datname;" postgres | \
 while read line; do
-    database=${line}
-    echo "dumping database: $database";
-    $pg_dump -U $postgres_user "$database" | \
-        $compressor > $db_dump_dir/$database.$current_date.$compressor_suffix
+	database=${line}
+	echo "dumping database: $database";
+	$pg_dump -U $postgres_user "$database" | \
+	$compressor > $db_dump_dir/$database.$current_date.$compressor_suffix
 done
 
 # delete old dumps which are older than $keep_days
