@@ -50,9 +50,7 @@ compressor_suffix='gz'
 current_date="$(/bin/date +%Y%m%d)"
 find_cmd='/usr/bin/find'
 
-pg_version="$(psql -V | sed 's/.* //')"
-
-if test "$pg_version" -le 11
+if test "$(psql --version | sed 's/.* //; s/\..*//')" -le 11
 then
 	pg_dump="$pg_dump --oids"
 fi
