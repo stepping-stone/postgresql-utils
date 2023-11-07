@@ -73,5 +73,6 @@ while read line; do
 done
 
 # delete old dumps which are older than $keep_days
-$find_cmd "$db_dump_dir"     -type f -mtime +$keep_days -delete
-$find_cmd "$global_dump_dir" -type f -mtime +$keep_days -delete
+let keep_minutes="$keep_days*24*60"
+$find_cmd "$db_dump_dir"     -type f -mmin +"$keep_minutes" -delete
+$find_cmd "$global_dump_dir" -type f -mmin +"$keep_minutes" -delete
