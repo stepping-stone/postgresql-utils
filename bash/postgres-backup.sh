@@ -346,7 +346,7 @@ then
 	opt_oids=false
 	pg_version="$(psql --version | sed 's/.* //; s/\..*//')"
 
-	if grep --quiet '^[0-9]+$' <<< "$pg_version"
+	if grep --quiet --extended-regexp '^[0-9]+$' <<< "$pg_version"
 	then
 		[[ "$pg_version" -le 11 ]] && opt_oids=true
 	else
