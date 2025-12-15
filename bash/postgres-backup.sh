@@ -43,6 +43,7 @@ opt_dry_run=false
 opt_prune=true
 opt_global=true
 opt_oids=''
+opt_config_file=/etc/postgres-backup.conf
 opt_retention=14d
 opt_date_format=%Y%m%d
 opt_filter=''
@@ -88,6 +89,8 @@ OPTIONS
 					the pg_dump option --oids is automatically appended if the PostgreSQL
 					version is 11 or older.
 
+	--config-file FILE_PATH		Path pointing to the configuration file. Default: "$opt_config_file".
+
 	--databases DATABASES		Databases to dump. Default: all databases.
 					DATABASES is a list of database names, separated by comma.
 
@@ -97,7 +100,7 @@ OPTIONS
 					"h" for hours, and "d" for days.
 
 	--date-format FORMAT		Date format to use in dump file names. Default: "$opt_date_format".
-					FORMAT corresponds to the format used by the GNU date utility).
+					FORMAT corresponds to the format used by the GNU date utility.
 
 	--filter FILTER			SQL filter to apply when searching for databases to dump.
 					Default: "$opt_filter".
@@ -127,6 +130,40 @@ OPTIONS
 	--compressor COMMAND		The command to use to compress dump files. Default: "$opt_compressor".
 					You may want to change the file name extention via --filename-template
 					if you specify a custom compressor.
+
+CONFIGURATION FILE
+
+	You may use a configuration file (default location "$opt_config_file") to configure the PostgreSQL
+	backup script. The configuration file is sourced, so it is essentialy a Bash script. The PostgreSQL
+	backup script can be configured with the following variables:
+
+$(
+	printf '%8s%-22s %-35s %s\n\n' '' VARIABLE 'DEFAULT VALUE' 'COMMAND LINE EQUIVALENT'
+	for var in \
+		opt_xtrace \
+		opt_quiet \
+		opt_dry_run \
+		opt_prune \
+		opt_global \
+		opt_oids \
+		opt_config_file \
+		opt_retention \
+		opt_date_format \
+		opt_filter \
+		opt_db_dump_dir \
+		opt_global_dump_dir \
+		opt_postgres_user \
+		opt_filename_template \
+		opt_compressor \
+		opt_databases
+	do
+		value=${!var}
+		value=${value:-\'\'}
+		option=${var#opt_}
+		option=--${option//_/-}
+		printf '%8s%-22s %-35s %s\n' '' "$var" "$value" "$option"
+	done
+)
 EOF
 )
 
@@ -140,8 +177,47 @@ help() {
 	fi
 
 	echo "$help_manual" >&2
+	echo >&2
 	exit "$exit_code"
 }
+
+# Look for the option "--config-file" first, as command line options must
+# override configuration file options.
+args=("$@")
+config_file=''
+
+while [[ $# -gt 0 ]]
+do
+	case "$1" in
+	-h|--help|-x|--xtrace|-q|--quiet|-n|--dry-run|--no-prune|--no-global|--no-oids|--oids)
+		shift
+		;;
+	--databases|--retention|--date-format|--filter|--db-dump-dir|--global-dump-dir|--postgres-user|--filename-template|--compressor)
+		shift 2
+		;;
+	--config-file)
+		[[ $# -lt 2 ]] && help '--config-file requires an argument.'
+		config_file="$2"
+		shift 2
+		;;
+	*)
+		shift
+		;;
+	esac
+done
+
+if [[ -n "$config_file" ]]
+then
+	# Configuration file supplied via command line.
+	source "$config_file"
+elif [[ -f "$opt_config_file" ]]
+then
+	# Load default configuration file, as it exists.
+	source "$opt_config_file"
+fi
+
+# Restore command line arguments.
+set -- "${args[@]}"
 
 # Variable to keep track of positional arguments.
 posarg=0
@@ -179,6 +255,10 @@ do
 	--oids)
 		opt_oids=true
 		shift
+		;;
+	--config-file)
+		# Skip this option, as we have loaded its value before.
+		shift 2
 		;;
 	--databases)
 		[[ $# -lt 2 ]] && help '--databases requires an argument.'
