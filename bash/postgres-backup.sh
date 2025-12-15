@@ -404,13 +404,21 @@ done
 
 if $opt_prune
 then
-	$opt_quiet || echo 'Removing old dump files'
-	find \
-		"$opt_db_dump_dir" \
-		"$opt_global_dump_dir" \
-		-type f \
-		-mmin +"$opt_retention" \
-		$($opt_dry_run || echo -delete) \
-		-printf 'Removing %p\n' \
-		> $($opt_quiet && echo /dev/null || echo /dev/stdout)
+	prune() {
+		find \
+			"$opt_db_dump_dir" \
+			"$opt_global_dump_dir" \
+			-type f \
+			-mmin +"$opt_retention" \
+			$($opt_dry_run || echo -delete) \
+			"$@"
+	}
+
+	if $opt_quiet
+	then
+		prune -printf ''
+	else
+		echo 'Removing old dump files'
+		prune -printf 'Removing %p\n'
+	fi
 fi
