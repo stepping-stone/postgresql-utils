@@ -393,7 +393,11 @@ do
 	then
 		mkdir --parents "$(dirname "$destination")"
 		pg_dump \
-			--create \
+			--clean \
+			--no-owner \
+			--no-privileges \
+			--no-acl \
+			--column-inserts \
 			--blobs \
 			$($opt_oids && echo --oids) \
 			--username "$opt_postgres_user" \
