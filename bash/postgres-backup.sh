@@ -42,6 +42,12 @@ opt_quiet=false
 opt_dry_run=false
 opt_prune=true
 opt_global=true
+opt_create=true
+opt_clean=false
+opt_no_owner=false
+opt_no_privileges=false
+opt_no_acl=false
+opt_column_inserts=false
 opt_oids=''
 opt_config_file=/etc/postgres-backup.conf
 opt_retention=14d
@@ -79,12 +85,21 @@ OPTIONS
 
 	--no-global			Do not create the global objects dump.
 
-	--no-oids			Do not append --oids to pg_dump when dumping databases.
-					If neither option --no-oids nor --oids is passed to the script,
-					the pg_dump option --oids is automatically appended if the PostgreSQL
-					version is 11 or older.
+	--no-create			Do not use --create with pg_dump.
+
+	--clean				Add --clean to pg_dump.
+
+	--no-owner			Add --no-owner to pg_dump.
+
+	--no-privileges			Add --no-privileges to pg_dump.
+
+	--no-acl			Add --no-acl to pg_dump.
+
+	--column-inserts		Add --column-inserts to pg_dump.
 
 	--oids				Append --oids to pg_dump when dumping databases.
+
+	--no-oids			Do not append --oids to pg_dump when dumping databases.
 					If neither option --no-oids nor --oids is passed to the script,
 					the pg_dump option --oids is automatically appended if the PostgreSQL
 					version is 11 or older.
@@ -145,6 +160,12 @@ $(
 		opt_dry_run \
 		opt_prune \
 		opt_global \
+		opt_create \
+		opt_clean \
+		opt_no_owner \
+		opt_no_privileges \
+		opt_no_acl \
+		opt_column_inserts \
 		opt_oids \
 		opt_config_file \
 		opt_retention \
@@ -189,7 +210,7 @@ config_file=''
 while [[ $# -gt 0 ]]
 do
 	case "$1" in
-	-h|--help|-x|--xtrace|-q|--quiet|-n|--dry-run|--no-prune|--no-global|--no-oids|--oids)
+	-h|--help|-x|--xtrace|-q|--quiet|-n|--dry-run|--no-prune|--no-global|--no-create|--clean|--no-owner|--no-privileges|--no-acl|--column-inserts|--no-oids|--oids)
 		shift
 		;;
 	--databases|--retention|--date-format|--filter|--db-dump-dir|--global-dump-dir|--postgres-user|--filename-template|--compressor)
@@ -246,6 +267,30 @@ do
 		;;
 	--no-global)
 		opt_global=false
+		shift
+		;;
+	--no-create)
+		opt_create=false
+		shift
+		;;
+	--clean)
+		opt_clean=true
+		shift
+		;;
+	--no-owner)
+		opt_no_owner=true
+		shift
+		;;
+	--no-privileges)
+		opt_no_privileges=true
+		shift
+		;;
+	--no-acl)
+		opt_no_acl=true
+		shift
+		;;
+	--column-inserts)
+		opt_column_inserts=true
 		shift
 		;;
 	--no-oids)
@@ -393,11 +438,12 @@ do
 	then
 		mkdir --parents "$(dirname "$destination")"
 		pg_dump \
-			--clean \
-			--no-owner \
-			--no-privileges \
-			--no-acl \
-			--column-inserts \
+			$($opt_create && echo --create) \
+			$($opt_clean && echo --clean) \
+			$($opt_no_owner && echo --no-owner) \
+			$($opt_no_privileges && echo --no-privileges) \
+			$($opt_no_acl && echo --no-acl) \
+			$($opt_column_inserts && echo --column-inserts) \
 			--blobs \
 			$($opt_oids && echo --oids) \
 			--username "$opt_postgres_user" \
