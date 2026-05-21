@@ -33,7 +33,7 @@
 #
 ################################################################################
 
-set -o errexit
+set -o errexit -o nounset -o pipefail
 umask 0027
 
 # Options: default values.
@@ -191,7 +191,7 @@ EOF
 help() {
 	local exit_code=0
 
-	if [[ -n "$1" ]]
+	if [[ $# -gt 0 ]]
 	then
 		printf '\033[1;31mERROR: %s\033[0m\n\n' "$1" >&2
 		exit_code=1
