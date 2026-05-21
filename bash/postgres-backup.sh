@@ -454,21 +454,21 @@ done
 
 if $opt_prune
 then
-	prune() {
-		find \
-			"$opt_db_dump_dir" \
-			"$opt_global_dump_dir" \
-			-type f \
-			-mmin +"$opt_retention" \
-			$($opt_dry_run || echo -delete) \
-			"$@"
-	}
+	$opt_quiet || echo 'Removing old dump files'
+	find \
+		"$opt_db_dump_dir" \
+		"$opt_global_dump_dir" \
+		-type f \
+		-mmin +"$opt_retention" \
+		$($opt_dry_run || echo -delete) \
+		-printf "$($opt_quiet || echo 'Removing dump %p\n')"
 
-	if $opt_quiet
-	then
-		prune -printf ''
-	else
-		echo 'Removing old dump files'
-		prune -printf 'Removing %p\n'
-	fi
+	$opt_quiet || echo 'Removing empty directories'
+	find \
+		"$opt_db_dump_dir" \
+		"$opt_global_dump_dir" \
+		-type d \
+		-empty \
+		$($opt_dry_run || echo -delete) \
+		-printf "$($opt_quiet || echo 'Removing empty directory %p\n')"
 fi
